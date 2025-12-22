@@ -1,7 +1,7 @@
 # Imports 
 from flask import Flask, render_template, redirect, request
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # My App
@@ -25,9 +25,17 @@ class GroceryItem(db.Model):
     time = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+
+class WeeklyBudget(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    budget = db.Column(db.Integer, default=0)
+
+
+
     def __repr__(self):
         return f"item {self.id}"
     
+
 
 
 
@@ -37,27 +45,73 @@ class GroceryItem(db.Model):
 def index():
     # Add a purchase
     if request.method == "POST":
-        amount = request.form['amount']
+        amount = int(request.form['amount'])
         category = request.form['category']
         shopper = request.form['shopper']
-        new_purchase = GroceryItem(
+        new_item = GroceryItem(
             amount=amount,
             category=category,
             shopper=shopper
         )
-        try:
-            db.session.add(new_purchase)
-            db.session.commit()
-            return redirect("/")
-        except Exception as e:
-            print(f"ERROR:{e}")
-            return f"ERROR:{e}"
-        
-    # see all purchases
-    else:
-        items = GroceryItem.query.order_by(GroceryItem.time).all()
-        return render_template("index.html", items=items)
+        db.session.add(new_item)
+        db.session.commit()
+        return redirect("/")
     
+    # GET = show dashboard + list
+    # 1) Get weekly budget (single row) 
+    budget_row = WeeklyBudget.query.first()
+    weekly_budget = budget_row.budget if budget_row else 0
+
+    # 2) Compute "this week" (Monday -> Sunday)
+    now = datetime.utcnow()
+    start_of_week = now - timedelta(days=now.weekday())
+    start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+    # 3) Purchases this week
+    items = (
+        GroceryItem.query
+        .filter(GroceryItem.time >= start_of_week)
+        .order_by(GroceryItem.time.desc())
+        .all()  
+     )
+    
+
+    # 4) Calculate spent + remaining
+    spent = sum(item.amount for item in items)
+    remaining = weekly_budget - spent
+
+    return render_template(
+        "index.html",
+        items=items,
+        weekly_budget=weekly_budget,
+        spent=spent,
+        remaining=remaining
+    )
+
+
+
+
+
+
+@app.route("/budget", methods=["POST"])
+def set_budget():
+    new_budget = int(request.form["budget"])
+
+    budget_row = WeeklyBudget.query.first()
+
+    if budget_row:
+        #Update existing row
+        budget_row.budget = new_budget
+    else:
+        #Create it once
+        budget_row = WeeklyBudget(budget=new_budget)
+        db.session.add(budget_row)
+
+    db.session.commit()
+    return redirect("/")
+    
+
 
 
 
@@ -79,6 +133,7 @@ def delete(id:int):
 
 
 
+
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id:int):
     edit_item = GroceryItem.query.get_or_404(id)
@@ -91,19 +146,6 @@ def edit(id:int):
             return f"ERROR: {e}"
     else:
         return render_template('edit.html', edit_item=edit_item)
-    
-    
-
-
-
-
-
-
-
-
-
-
-
 
 
 

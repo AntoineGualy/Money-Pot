@@ -11,11 +11,34 @@
 <div class="content">
     <h1> Money-P </h1>
 
+    <!-- Budget summary-->
+    {% if weekly_budget == 0 %}
+      <h3>Add a weekly budget</h3>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Weekly Budget</th>
+                <th>Spent This Week</th>
+                <th>Remaining</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ weekly_budget }}</td>
+                <td>{{ spent }}</td>
+                <td>{{ remaining }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Purchases table -->
     {% if items | length == 0 %}
-    <h3> No purchases yet. </h3>
+    <h3>No purchases yet.</h3>
     {% else %}
     <table>
-        <thead></thead>
+        <thead>
           <tr>
             <th> Amount </th>
             <th> Category </th>
@@ -37,12 +60,13 @@
 
 
                 </td>
-
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% endif %}
+
+    <!-- Add purchase form -->
     <form action="/" method="POST">
         <label for="amount">Amount</label>
         <input type="number" name="amount" id="amount" min="0" step="1" required>
@@ -60,6 +84,13 @@
         <input type="text" name="shopper" id="shopper" maxlength="20" reguired>
 
         <button type="submit">Add Purchase</button>
+    </form>
+
+    <!-- Set weekly budget form -->
+    <form action="/budget" method="POST">
+        <label for="/budget" method="POST"></label>
+        <input type="number" name="budget" id="budget" min="0" step="1" required>
+        <button type="submit">Set Weekly Budget</button>
     </form>
     
 </div>
