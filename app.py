@@ -3,6 +3,9 @@ from flask import Flask, render_template, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 
+# import request to to be able to conecct to the open foods API
+import requests
+
 
 # My App
 app = Flask(__name__)
@@ -164,7 +167,17 @@ def smart_look():
 
 @app.route("/test-api")
 def test_api():
-    return "Test API works"
+    barcode = "737628064502"
+
+    url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
+
+    response = requests.get(url)
+
+    print(response.status_code)
+    print(response.text)
+    
+    
+    return "Check the terminal for API response"
 
 
 
