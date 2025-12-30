@@ -154,12 +154,38 @@ def edit(id:int):
 
 
 
-@app.route("/lookup", methods=["GET", "POST"])
+@app.route("/lookup", methods=["GET"])
 def smart_look():
-    if request.method == "POST":
         return render_template('look_up.html')
+
+
+
+
+@app.route("/lookup", methods=["POST"])
+def smart_look_post():
+    
+    barcode = "737628064502"
+
+    url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
+
+    response = requests.get(url)
+
+    print(response.status_code)
+    data = response.json()
+    print(data.keys())
+
+
+    if data.get("status") == 1:
+        product = data.get("product", {})
+        name = product.get("product_name", "No name found")
+        result = {"name": name}
     else:
-        return render_template('look_up.html')
+        print("Product not found")    
+
+    
+    
+    return render_template("look_up.html", result=result)
+
 
 
 
