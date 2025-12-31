@@ -230,15 +230,22 @@ def lookup_name_post():
     response = requests.get(url, params=params, timeout=10)
     data = response.json()
 
+    
+    #The page crashs after 25 seconds and this is what the page should do if so.
     try:
         response = requests.get(url, params=params, timeout=25)
-    except:
-        return render_template("lookup_name.html", result={"error": "Open Food Facts timed out. Try again"})
- 
+    except requests.exceptions.Timeout:
+        return render_template("lookup_name.html", result={"error": "Open Food Facts timed out. Try again."})
+    except Exception as e:
+        return render_template("lookup_name.html", result={"error": f"Request failed: {e}"})
+    
+
+
     # API test results
     print("RAW QUERY:", repr(name))
     print("OFF HTTP:", response.status_code)
     print("NUM PRODUCTS:", len(data.get("products", [])))
+
 
 
     products = data.get("products", [])
@@ -263,14 +270,6 @@ def lookup_name_post():
 
     
     return render_template("lookup_name.html", result=result)
-
-
-
-
-
-
-
-
 
 
 
