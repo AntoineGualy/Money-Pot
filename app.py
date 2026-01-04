@@ -51,7 +51,8 @@ class WeeklyBudget(db.Model):
         return f"item {self.id}"
     
 
-
+with app.app_context():
+    db.create_all()
 
 
 
