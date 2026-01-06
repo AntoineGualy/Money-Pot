@@ -1,4 +1,4 @@
-🥫 Money-Pot
+<p1>🥫 Money-Pot<p1>
 Smart grocery budgeting made simple, shared, and accessible.
 Money-Pot is a free grocery budgeting web application that helps users manage grocery spending, track purchases, collaborate under a shared budget, discover deals and coupons, and access free food resources. It is designed especially for college students, roommates, couples, and low-income users who need a clear, reliable way to manage shared grocery expenses.
 This repository represents the MVP (Minimum Viable Product) and ongoing development of Money-Pot.
