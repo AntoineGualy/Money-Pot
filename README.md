@@ -1,3 +1,9 @@
+<p align="center">
+  <h1 align="center">🥫 Money-Pot</h1>
+  <p align="center"><b>Smart grocery budgeting made simple, shared, and accessible.</b></p>
+</p>
+
+
 🥫 Money-Pot
 Smart grocery budgeting made simple, shared, and accessible.
 Money-Pot is a free grocery budgeting web application that helps users manage grocery spending, track purchases, collaborate under a shared budget, discover deals and coupons, and access free food resources. It is designed especially for college students, roommates, couples, and low-income users who need a clear, reliable way to manage shared grocery expenses.
