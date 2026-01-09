@@ -17,7 +17,7 @@ This repository represents the MVP (Minimum Viable Product) and ongoing developm
 (<img width="1710" height="987" alt="Screenshot 2026-01-06 at 3 49 19 AM" src="https://github.com/user-attachments/assets/df4b56b0-9699-4a31-aa95-9b437254c465" />)
 
 
-🧩 Problem Statement
+<h2>🧩 Problem Statement</h2>
 Grocery budgeting is a major source of stress in shared households. Many people—especially college students—rely on verbal agreements or loose planning when splitting grocery costs. This often leads to:
 Overspending
 Confusion over who paid for what
@@ -27,7 +27,7 @@ At the same time, low-income and food-insecure individuals face additional chall
 Money-Pot solves this by providing a centralized, transparent, and collaborative grocery budgeting system.
 
 
-🎯 Target Users
+<h2>🎯 Target Users</h2>
 Primary Users
 College students
 Roommates sharing grocery expenses
@@ -38,7 +38,7 @@ Food-insecure individuals
 Families aiming to reduce grocery spending
 
 
-🏆 Product Goals
+<h2>🏆 Product Goals</h2>
 Primary Goal
 Help users create a stable, shared grocery budgeting system that promotes financial awareness, reduces overspending, and improves communication in shared households.
 Success Looks Like
@@ -49,27 +49,27 @@ Users take advantage of deals, coupons, and free food resources
 Food-insecure users gain easier access to essential food support
 
 
-✨ Core Features (Planned & In Progress)
+<h1>✨ Core Features (Planned & In Progress)</h1>
 
-🧑‍🤝‍🧑 Shared Budgeting
+<h2>🧑‍🤝‍🧑 Shared Budgeting</h2>
 Create weekly or monthly grocery budgets
 Invite roommates, partners, or family members
 Everyone can add purchases and view shared spending
 
-🧾 User Accountability
+<h2>🧾 User Accountability</h2>
 Track who made each purchase
 See when money was spent
 Understand how each purchase impacts the shared budget
 Encourages transparency and teamwork
 
-🛒 Grocery Deals & Coupons
+<h2>🛒 Grocery Deals & Coupons</h2>
 Integration with external APIs for:
 Store deals
 Coupons
 Discounts and promotions
 Helps users save money before they shop
 
-🥗 Free Food Resources
+<h2>🥗 Free Food Resources</h2>
 A dedicated section for:
 Local food banks
 Free food events
@@ -77,7 +77,7 @@ Community kitchens
 Free grocery programs
 Designed to support low-income and food-insecure users.
 
-📊 Analytics Dashboard
+<h2>📊 Analytics Dashboard<h2>
 Weekly and monthly spending summaries
 Category-based spending (produce, meat, snacks, etc.)
 Spending trends over time
@@ -85,7 +85,7 @@ Spending trends over time
 
 
 
-🛠️ Current MVP Status
+<h2>🛠️ Current MVP Status<h2>
 The current MVP focuses on establishing the backend foundation:
 Flask-based web application
 CRUD functionality for budget entries
@@ -97,7 +97,7 @@ Deployed web app for testing real-world behavior
 
 
 
-⚠️ Known Limitation & Key Learning
+<h2>⚠️ Known Limitation & Key Learning<>h2
 During deployment, a critical issue was discovered:
 budget data entered by one user was visible to others using the same deployed app.
 This highlighted an important architectural lesson:
@@ -109,7 +109,7 @@ user accounts, authentication, and true shared-budget groups.
 
 
 
-🧠 What I’ve Learned So Far
+<h2>🧠 What I’ve Learned So Far<h2>
 How shared data behaves in deployed web applications
 Why authentication is critical for privacy and trust
 How MVPs expose real architectural flaws
@@ -118,7 +118,7 @@ How product requirements influence backend design
 
 
 
-🛠️ Tech Stack
+<h2>🛠️ Tech Stack<h2>
 Backend
 Python
 Flask
@@ -133,7 +133,7 @@ Git & GitHub
 VS Code
 
 
-🔮 Roadmap
+<h2>🔮 Roadmap<h2>
 User authentication (login & registration)
 True shared-budget groups with multiple users
 Budget invitations & permissions
@@ -143,12 +143,12 @@ Analytics dashboard & visualizations
 Production-ready database
 
 
-🚧 Project Status
+<h2>🚧 Project Status<h2>
 Active Development (MVP → V1)
 Money-Pot is under active development and architectural refinement.
 
 
-📫 Contact
+<h2>📫 Contact<h2>
 Antoine Gualy
 gualyantoine@gmail.com
 Computer Science Student
