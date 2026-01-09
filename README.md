@@ -135,14 +135,15 @@ How product requirements influence backend design
 </ul>
 
 <h2>🔮 Roadmap</h2>
-User authentication (login & registration)
-True shared-budget groups with multiple users
-Budget invitations & permissions
-Grocery deal & coupon API integration
-Free food resource database
-Analytics dashboard & visualizations
-Production-ready database
-
+<ul>
+<li>User authentication </li>
+<li>shared-budget groups with multiple users</li>
+<li>Budget invitations & permissions</li>
+<li>Grocery deal & coupon API integration</li>
+<li>Free food resource database</li>
+<li>Analytics dashboard & visualizations</li>
+<li>Production-ready database</li>
+</ul>
 
 <h2>🚧 Project Status</h2>
 Active Development (MVP → V1)
@@ -150,8 +151,8 @@ Money-Pot is under active development and architectural refinement.
 
 
 <h2>📫 Contact</h2>
-Antoine Gualy
-gualyantoine@gmail.com
-Computer Science Student
-Aspiring Software Engineer
+<p>Antoine Gualy<br>
+gualyantoine@gmail.com<br>
+Computer Science Student<br>
+Aspiring Software Engineer</p>
 
