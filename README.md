@@ -9,12 +9,12 @@ Smart grocery budgeting made simple, shared, and accessible.
 Money-Pot is a free grocery budgeting web application that helps users manage grocery spending, track purchases, collaborate under a shared budget, discover deals and coupons, and access free food resources. It is designed especially for college students, roommates, couples, and low-income users who need a clear, reliable way to manage shared grocery expenses.
 This repository represents the MVP (Minimum Viable Product) and ongoing development of Money-Pot.
 
-## 📸 Screenshots
+<h2>## 📸 Screenshots</h2>
 
 > Early MVP UI (Work in Progress)
 
-(<img width="1710" height="987" alt="Screenshot 2026-01-06 at 3 47 47 AM" src="https://github.com/user-attachments/assets/d64d24b2-a6eb-4bd7-bccc-29a6e88e7a93" />)
-(<img width="1710" height="987" alt="Screenshot 2026-01-06 at 3 49 19 AM" src="https://github.com/user-attachments/assets/df4b56b0-9699-4a31-aa95-9b437254c465" />)
+<img width="1710" height="987" alt="Screenshot 2026-01-06 at 3 47 47 AM" src="https://github.com/user-attachments/assets/d64d24b2-a6eb-4bd7-bccc-29a6e88e7a93" />
+<img width="1710" height="987" alt="Screenshot 2026-01-06 at 3 49 19 AM" src="https://github.com/user-attachments/assets/df4b56b0-9699-4a31-aa95-9b437254c465" />
 
 
 <h2>🧩 Problem Statement</h2>
@@ -28,26 +28,31 @@ Money-Pot solves this by providing a centralized, transparent, and collaborative
 
 
 <h2>🎯 Target Users</h2>
-Primary Users
-College students
-Roommates sharing grocery expenses
-Couples or partners managing a joint budget
-Secondary Users
-Low-income households
-Food-insecure individuals
-Families aiming to reduce grocery spending
+<h3>Primary Users</h3>
+<ul>
+<li>College students</li>
+<li>Roommates sharing grocery expenses</li>
+<li>Couples or partners managing a joint budget</li>
+</ul><br>  
 
+<h3>Secondary Users<h3>
+<ul>
+<li>Low-income households</li>
+<li>Food-insecure individuals</li>
+<li>Families aiming to reduce grocery spending</li>
+</ul>
 
 <h2>🏆 Product Goals</h2>
-Primary Goal
-Help users create a stable, shared grocery budgeting system that promotes financial awareness, reduces overspending, and improves communication in shared households.
-Success Looks Like
-Users clearly understand where their grocery money is going
-Shared households avoid confusion or conflict over expenses
-Users actively reduce unnecessary grocery spending
-Users take advantage of deals, coupons, and free food resources
-Food-insecure users gain easier access to essential food support
-
+<p>Primary Goal
+Help users create a stable, shared grocery budgeting system that promotes financial awareness, reduces overspending, and improves communication on money and budgeting.</p>
+  
+<h3>Success Looks Like</h3>
+<ol>
+<ul>Users clearly understand where their grocery money is going</ul>
+<ul>Shared households avoid confusion or conflict over expenses</ul>
+<ul>Users actively reduce unnecessary grocery spending</ul>
+<ul>Users take advantage of deals, coupons, and free food resources</ul>
+</ol>
 
 <h1>✨ Core Features (Planned & In Progress)</h1>
 
