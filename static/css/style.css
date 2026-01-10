@@ -224,3 +224,18 @@ button:hover {
 .link {
   color: #111827;
 }
+
+
+
+.Logout_Btn {
+  width: 120px;
+  height: 23px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 5px 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #111827;
+  font-size: 20px;
+}
