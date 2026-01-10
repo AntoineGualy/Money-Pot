@@ -53,6 +53,18 @@ class WeeklyBudget(db.Model):
 with app.app_context():
     db.create_all()
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+     return render_template("login.html")
+
+
+
+
+
+
+
+
+
 
 
 # Takes the information puts in database then sends it back 
@@ -324,3 +336,5 @@ def test_api():
 with app.app_context():
     db.create_all()
     
+if __name__ in "__main__":
+    app.run(debug=True)
