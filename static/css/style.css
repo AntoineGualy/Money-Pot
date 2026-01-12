@@ -227,15 +227,21 @@ button:hover {
 
 
 
+
 .Logout_Btn {
-  width: 130px;
-  height: 23px;
   position: absolute;
-  top: 0px;
-  right: 0px;
-  padding: 5px 10px;
+  top: 10px;
+  right: 10px;
+
+  padding: 5px 12px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #111827;
   background: #111827;
-  font-size: 20px;
+
+  font-size: 16px;
+  color: #e5e7eb;
+
+  cursor: pointer;
+  appearance: none;
+
 }
