@@ -32,8 +32,8 @@ app.secret_key = "dev"
 # Security Model ~ Single Row in DB
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.string(25), unique=True, nullable=False)
-    password = db.Comlumn(db.string(120), nullable=False)
+    username = db.Column(db.String(25), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
 
 
     # Saves the password when a user signs up
@@ -81,11 +81,12 @@ def login():
 @app.route("/", methods=["GET", "POST"])
 def index():
     # If the user is not loged in he is automatically
+    """
     if "usernmae" in session:
         return redirect(url_for('index.html'))
     else:
         return render_template("login.html")
-    
+    """
     # Add a purchase
     if request.method == "POST":
         amount = int(request.form['amount'])
