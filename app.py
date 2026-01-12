@@ -9,11 +9,16 @@ import requests
 
 # DataBase_URL (Supabase)
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 
 
 # My App
 app = Flask(__name__)
-
+app.secret_key = os.getenv("SECRET_KEY")
 
 # Configure database Supabase
 db_url = os.getenv("DATABASE_URL")
@@ -27,7 +32,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
 db = SQLAlchemy(app)
-app.secret_key = "dev"
+
 
 # Security Model ~ Single Row in DB
 class User(db.Model):
