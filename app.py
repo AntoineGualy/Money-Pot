@@ -36,6 +36,11 @@ class User(db.Model):
     password = db.Comlumn(db.string(120), nullable=False)
 
 
+    # Saves the password when a user signs up
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+
 # Data Class - Row of data
 
 class GroceryItem(db.Model):
