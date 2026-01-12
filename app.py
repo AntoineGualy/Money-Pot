@@ -29,7 +29,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 app.secret_key = "dev"
 
-# Security Model
+# Security Model ~ Single Row in DB
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.string(25), unique=True, nullable=False)
@@ -39,6 +39,11 @@ class User(db.Model):
     # Saves the password when a user signs up
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
+
+
+    # Checks if the user password enter by the user is in the database
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 
 # Data Class - Row of data
