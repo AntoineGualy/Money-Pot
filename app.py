@@ -27,7 +27,13 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
 db = SQLAlchemy(app)
+app.secret_key = "dev"
 
+# Security Model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.string(25), unique=True, nullable=False)
+    password = db.Comlumn(db.string(120), nullable=False)
 
 
 # Data Class - Row of data
