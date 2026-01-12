@@ -1,7 +1,8 @@
 # Imports 
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, session, url_for 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # import request to to be able to conecct to the open foods API
 import requests
@@ -53,23 +54,22 @@ class WeeklyBudget(db.Model):
 with app.app_context():
     db.create_all()
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
      return render_template("login.html")
 
 
 
-
-
-
-
-
-
-
-
 # Takes the information puts in database then sends it back 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    # If the user is not loged in he is automatically
+    if "usernmae" in session:
+        return redirect(url_for('index.html'))
+    else:
+        return render_template("login.html")
+    
     # Add a purchase
     if request.method == "POST":
         amount = int(request.form['amount'])
