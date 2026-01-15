@@ -85,8 +85,8 @@ def login():
         return render_template("login.html")
     
     # Checks to see if the username name and password match somewhere in the data base
-    username = request.form['username']
-    password = request.form["password"]
+    username = request.form.get("username")
+    password = request.form.get("password")
     user = User.query.filter_by(username=username).first()
     
     # allows user to access the home page after being verifed
@@ -98,10 +98,10 @@ def login():
 
 
 
-@app.route("/register", methods=["POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    username = request.form["username"]
-    password = request.form["password"]
+    username = request.form.get("username")
+    password = request.form.get("password")
     user = User.query.filter_by(username=username).first()
     if user:
         return render_template("login.html", error="There already exist a User with this Username!")
@@ -111,7 +111,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         session["username"] = username
-        return redirect(url_for("idex.html"))
+        return redirect(url_for("index"))
 
 
 
