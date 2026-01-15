@@ -78,7 +78,14 @@ with app.app_context():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-     return render_template("login.html")
+    username = request.form['usernmae']
+    password = request.form["password"]
+    user = User.query.filter_by(username=username).first()
+
+    if user and user.check_password(password):
+        pass
+    else:
+        return render_template("login.html")
 
 
 
