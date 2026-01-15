@@ -76,17 +76,50 @@ with app.app_context():
     db.create_all()
 
 
+
+
+# login
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    username = request.form['usernmae']
+    if request.method == "GET":
+        return render_template("login.html")
+    
+    # Checks to see if the username name and password match somewhere in the data base
+    username = request.form['username']
     password = request.form["password"]
     user = User.query.filter_by(username=username).first()
-
+    
+    # allows user to access the home page after being verifed
     if user and user.check_password(password):
         session['username'] = username
-        return redirect(url_for("index.html"))
+        return redirect(url_for("index"))
     else:
         return render_template("login.html")
+
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    username = request.form["username"]
+    password = request.form["password"]
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return render_template("login.html", error="There already exist a User with this Username!")
+    else:
+        new_user = User(username=username)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        session["username"] = username
+        return redirect(url_for("idex.html"))
+
+
+
+
+
+
+
+
 
 
 
@@ -94,12 +127,12 @@ def login():
 @app.route("/", methods=["GET", "POST"])
 def index():
     # If the user is not loged in he is automatically
-    """
+
     if "usernmae" in session:
         return redirect(url_for('index.html'))
     else:
         return render_template("login.html")
-    """
+    
     # Add a purchase
     if request.method == "POST":
         amount = int(request.form['amount'])
