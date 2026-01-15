@@ -83,7 +83,8 @@ def login():
     user = User.query.filter_by(username=username).first()
 
     if user and user.check_password(password):
-        pass
+        session['username'] = username
+        return redirect(url_for("index.html"))
     else:
         return render_template("login.html")
 
