@@ -33,17 +33,18 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+print(app.config["SQLALCHEMY_DATABASE_URI"])
 
 # Security Model ~ Single Row in DB
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
 
 
     # Saves the password when a user signs up
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
 
 
     # Checks if the user password enter by the user is in the database
@@ -94,7 +95,7 @@ def login():
         session['username'] = username
         return redirect(url_for("index"))
     else:
-        return render_template("login.html")
+        return render_template("login.html", error="Invalid username or password")
 
 
 
@@ -103,18 +104,26 @@ def login():
 #Sign Up
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    username = request.form.get("username")
-    password = request.form.get("password")
+    if request.method == "GET":
+        return render_template("login.html")
+
+    username = (request.form.get("username") or "").strip()
+    password = request.form.get("password") or ""
+
+    if not username or not password:
+        return render_template("login.html", error="Username and password required.")
+
     user = User.query.filter_by(username=username).first()
     if user:
         return render_template("login.html", error="There already exist a User with this Username!")
-    else:
-        new_user = User(username=username)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        session["username"] = username
-        return redirect(url_for("index"))
+
+    new_user = User(username=username)
+    new_user.set_password(password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    session["username"] = username
+    return redirect(url_for("index"))
 
 
 
@@ -125,7 +134,7 @@ def logout():
     # pop ends the session
     session.pop("username", None)
     # The user is redirected to the login page
-    return redirect(url_for(login))
+    return redirect(url_for("login"))
 
 
 
@@ -138,9 +147,7 @@ def logout():
 def index():
     # If the user is not loged in he is automatically
 
-    if "usernmae" in session:
-        return redirect(url_for('index.html'))
-    else:
+    if "username" not in session:
         return render_template("login.html")
     
     # Add a purchase
@@ -404,6 +411,22 @@ def test_api():
 
 
 
+
+
+"""
+username = request.form.get("username")
+    password = request.form.get("password")
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return render_template("login.html", error="There already exist a User with this Username!")
+    else:
+        new_user = User(username=username)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        session["username"] = username
+        return redirect(url_for("index"))
+"""
 
 
 with app.app_context():
