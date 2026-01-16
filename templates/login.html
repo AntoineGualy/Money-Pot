@@ -19,11 +19,34 @@
         <input type="text" name="username" placeholder="username" required />
         <input type="text" name="password" placeholder="password" required />
         
-        <input type="submit" value="Login" placeholder="login"/>
-        <input type="button" value="Sign up" placeholder="sign_up"/>
+        <input type="button" value="Login" placeholder="login" onclick="setActionForm('login')"/>
+        <input type="button" value="Sign up" placeholder="sign_up" onclick="setActionForm('Sign_up')"/>
       </form>
+        {% if error %}
+          <div style="color: red; font-weight: bold;">{{ error }}</div>
+          {{ error }}
+        {% endif %}
 
     </div>
 </main>
 
+
+<script>
+  function setActionForm(action) {
+    let form = document.getElementById('auth-form');
+    if (!form) {
+      console.error("Form with id'auth-form' not found");
+      return;
+    }
+    if (action === 'login') {
+      form.action = "{{url_for('login')}}";
+      form.methods = 'POST';
+      form.submit();
+    } else if (action === 'Sign_up') {
+      form.action = "{{url_for('register')}}";
+      form.method = "POST";
+      form.submit();
+    }
+  }
+</script>
 {% endblock%}
