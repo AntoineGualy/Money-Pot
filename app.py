@@ -98,6 +98,9 @@ def login():
 
 
 
+
+
+#Sign Up
 @app.route("/register", methods=["GET", "POST"])
 def register():
     username = request.form.get("username")
@@ -116,6 +119,13 @@ def register():
 
 
 
+#Logout 
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    # pop ends the session
+    session.pop("username", None)
+    # The user is redirected to the login page
+    return redirect(url_for(login))
 
 
 
