@@ -1,7 +1,8 @@
 # Imports 
 from flask import Flask, render_template, redirect, request, session, url_for 
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # import request to to be able to conecct to the open foods API
@@ -18,6 +19,24 @@ load_dotenv()
 
 # My App
 app = Flask(__name__)
+
+
+
+
+@app.template_filter("local_time")
+def local_time(dt):
+    if dt is None :
+        return ""
+    
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt.astimezone(
+        ZoneInfo("America/Denver")
+    ).strftime("%b %d, %Y %I:%M %p")
+  
+
 app.secret_key = os.getenv("SECRET_KEY")
 
 # Configure database Supabase
@@ -59,7 +78,7 @@ class GroceryItem(db.Model):
     amount = db.Column(db.Integer, default=0)
     category = db.Column(db.String(20))
     shopper = db.Column(db.String(20))
-    time = db.Column(db.DateTime, default=datetime.utcnow)
+    time = db.Column(db.DateTime,default=lambda: datetime.now(timezone.utc))
 
 
 
@@ -173,10 +192,9 @@ def index():
     weekly_budget = budget_row.budget if budget_row else 0
 
     # 2) Compute "this week" (Monday -> Sunday)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     start_of_week = now - timedelta(days=now.weekday())
     start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
-
 
     # 3) Purchases this week
     items = (
@@ -199,8 +217,6 @@ def index():
         spent=spent,
         remaining=remaining
     )
-
-
 
 
 
