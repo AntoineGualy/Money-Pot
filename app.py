@@ -146,9 +146,12 @@ def logout():
 @app.route("/", methods=["GET", "POST"])
 def index():
     # If the user is not loged in he is automatically
-
+    username = request.form.get("username")
     if "username" not in session:
         return render_template("login.html")
+    
+    # Display Username at the top
+    username = session["username"]
     
     # Add a purchase
     if request.method == "POST":
@@ -190,6 +193,7 @@ def index():
 
     return render_template(
         "index.html",
+        username=username,
         items=items,
         weekly_budget=weekly_budget,
         spent=spent,
