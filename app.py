@@ -431,24 +431,6 @@ def test_api():
 
 
 
-
-
-"""
-username = request.form.get("username")
-    password = request.form.get("password")
-    user = User.query.filter_by(username=username).first()
-    if user:
-        return render_template("login.html", error="There already exist a User with this Username!")
-    else:
-        new_user = User(username=username)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        session["username"] = username
-        return redirect(url_for("index"))
-"""
-
-
 with app.app_context():
     db.create_all()
     
