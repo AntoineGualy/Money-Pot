@@ -295,17 +295,15 @@ button:hover {
 
 /* Typography helpers (apply these to your h1/p elements or set globally in the card) */
 .login h1{
-  margin: 0 0 8px;
+  color: #f8fafc;
   font-size: 28px;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  margin-bottom: 6px;
 }
 
 .login p{
-  margin: 0 0 18px;
-  color: rgba(248,250,252,0.78);
+  color: rgba(248,250,252,0.75);
   font-size: 14px;
-  line-height: 1.4;
+  margin-bottom: 18px;
 }
 
 /* Inputs */
