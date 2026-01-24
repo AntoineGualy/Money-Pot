@@ -271,21 +271,22 @@ button:hover {
 .login{
   width: min(460px, 92vw);
   padding: 28px;
-  border-radius: 20px;
+  border-radius: 18px;
 
   background: rgba(17, 24, 39, 0.45);
   border: 1px solid rgba(255,255,255,0.14);
-  box-shadow:
-    0 20px 60px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(255,255,255,0.06) inset;
 
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.05) inset;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
   /* load-in animation */
   opacity: 0;
-  transform: translateY(14px);
-  animation: cardIn 700ms ease-out forwards;
+  transform: translateY(12px);
+  animation: cardIn 500ms ease-out forwards;
 }
 
 @keyframes cardIn{
