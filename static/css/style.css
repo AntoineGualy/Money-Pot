@@ -261,7 +261,9 @@ button:hover {
   justify-content:center;
   padding: 24px;
 
+  /* I really like this dark blue #020617 */
   background: #020617;
+  color: #f8fafc;
 
 }
 
