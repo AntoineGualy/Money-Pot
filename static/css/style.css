@@ -251,43 +251,6 @@ button:hover {
 
 }
 
-/*
-.login_page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;*/
-
-  /* Keeps text visiable */
-  /*color: #f9fafb;
-
-
-
-  min-height: 100vh;
-  background:
-    /* glossy shin (top-left to bottom-right) */
-    /*linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.00) 45%),
-
-    /* bright glow spots */
-    /*radial-gradient(900px circle at 18% 18%, rgba(168, 85, 247, 0.55), transparent 55%),
-    radial-gradient(700px circle at 82% 26%, rgba(99, 102, 241, 0.50), transparent 55%),
-    radial-gradient(900px circle at 50% 92%, rgba(236, 72, 153, 0.30), transparent 60%),
-
-    /* base */
-    /*linear-gradient(180deg, #070012 0%, #160033 45%, #05000b 100%);
-  
-
-}
-
-
-.login {
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  max-width: 400px;
-  width:100%;
-}*/
 
 
 /* Page background: aurora + vignette + subtle texture */
