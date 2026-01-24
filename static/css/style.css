@@ -259,35 +259,10 @@ button:hover {
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: 32px 16px;
-  color: #f8fafc;
+  padding: 24px;
 
-  background:
-    /* vignette (dark edges) */
-    radial-gradient(1200px circle at 50% 50%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%),
+  background: #020617;
 
-    /* aurora blobs */
-    radial-gradient(800px circle at 20% 20%, rgba(168, 85, 247, 0.55), transparent 55%),
-    radial-gradient(900px circle at 85% 25%, rgba(99, 102, 241, 0.50), transparent 60%),
-    radial-gradient(900px circle at 50% 95%, rgba(236, 72, 153, 0.28), transparent 60%),
-
-    /* base purple */
-    linear-gradient(180deg, #070014 0%, #12002a 55%, #05000b 100%);
-}
-
-/* Optional: a subtle "sparkle" noise feel using box-shadow trick on a pseudo layer.
-   If you don’t want pseudo elements, skip this. */
-.login_page::before{
-  content:"";
-  position: fixed;
-  inset: 0;
-  pointer-events:none;
-  background:
-    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.10) 50%, transparent 52%),
-    radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.08) 50%, transparent 52%),
-    radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,0.08) 50%, transparent 52%),
-    radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,0.07) 50%, transparent 52%);
-  opacity: 0.35;
 }
 
 /* The card: glass, blur, border, glow */
