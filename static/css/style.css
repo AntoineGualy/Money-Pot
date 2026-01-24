@@ -244,19 +244,39 @@ button:hover {
   background: #111827;
 
   font-size: 16px;
-  color: #e5e7eb;
+  color: #111827;
 
   cursor: pointer;
   appearance: none;
 
 }
 
-
+/*
 .login_page {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center;*/
+
+  /* Keeps text visiable */
+  /*color: #f9fafb;
+
+
+
+  min-height: 100vh;
+  background:
+    /* glossy shin (top-left to bottom-right) */
+    /*linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.00) 45%),
+
+    /* bright glow spots */
+    /*radial-gradient(900px circle at 18% 18%, rgba(168, 85, 247, 0.55), transparent 55%),
+    radial-gradient(700px circle at 82% 26%, rgba(99, 102, 241, 0.50), transparent 55%),
+    radial-gradient(900px circle at 50% 92%, rgba(236, 72, 153, 0.30), transparent 60%),
+
+    /* base */
+    /*linear-gradient(180deg, #070012 0%, #160033 45%, #05000b 100%);
+  
+
 }
 
 
@@ -267,4 +287,138 @@ button:hover {
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   max-width: 400px;
   width:100%;
+}*/
+
+
+/* Page background: aurora + vignette + subtle texture */
+.login_page{
+  min-height: 100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 32px 16px;
+  color: #f8fafc;
+
+  background:
+    /* vignette (dark edges) */
+    radial-gradient(1200px circle at 50% 50%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%),
+
+    /* aurora blobs */
+    radial-gradient(800px circle at 20% 20%, rgba(168, 85, 247, 0.55), transparent 55%),
+    radial-gradient(900px circle at 85% 25%, rgba(99, 102, 241, 0.50), transparent 60%),
+    radial-gradient(900px circle at 50% 95%, rgba(236, 72, 153, 0.28), transparent 60%),
+
+    /* base purple */
+    linear-gradient(180deg, #070014 0%, #12002a 55%, #05000b 100%);
+}
+
+/* Optional: a subtle "sparkle" noise feel using box-shadow trick on a pseudo layer.
+   If you don’t want pseudo elements, skip this. */
+.login_page::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events:none;
+  background:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.10) 50%, transparent 52%),
+    radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.08) 50%, transparent 52%),
+    radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,0.08) 50%, transparent 52%),
+    radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,0.07) 50%, transparent 52%);
+  opacity: 0.35;
+}
+
+/* The card: glass, blur, border, glow */
+.login{
+  width: min(460px, 92vw);
+  padding: 28px;
+  border-radius: 20px;
+
+  background: rgba(17, 24, 39, 0.45);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.06) inset;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  /* load-in animation */
+  opacity: 0;
+  transform: translateY(14px);
+  animation: cardIn 700ms ease-out forwards;
+}
+
+@keyframes cardIn{
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Typography helpers (apply these to your h1/p elements or set globally in the card) */
+.login h1{
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.login p{
+  margin: 0 0 18px;
+  color: rgba(248,250,252,0.78);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Inputs */
+.login input{
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 12px;
+  border-radius: 12px;
+
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px solid rgba(255,255,255,0.12);
+  outline: none;
+}
+
+.login input:focus{
+  border-color: rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.18);
+}
+
+/* Primary button */
+.login button{
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 0;
+  cursor: pointer;
+
+  color: #0b0216;
+  background: linear-gradient(135deg, rgba(236,72,153,0.95), rgba(168,85,247,0.95));
+  box-shadow: 0 12px 30px rgba(168,85,247,0.25);
+}
+
+.login button:hover{
+  transform: translateY(-1px);
+}
+
+.login button:active{
+  transform: translateY(0px);
+}
+
+/* Links */
+.login a{
+  color: rgba(248,250,252,0.85);
+  text-decoration: none;
+}
+.login a:hover{ text-decoration: underline; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .login{
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
