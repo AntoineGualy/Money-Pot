@@ -261,9 +261,12 @@ button:hover {
   justify-content:center;
   padding: 24px;
 
-  /* I really like this dark blue #020617 */
-  background: #020617;
-  color: #f8fafc;
+  /* I really like this dark blue #020617  for background */
+  background-color: #020617;
+  background-image: url("blurry-gradient-haikei.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 
 }
 
