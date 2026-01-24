@@ -337,27 +337,3 @@ button:hover {
   background: #A855f7;
   font-weight: 600;
 }
-
-.login button:hover{
-  transform: translateY(-1px);
-}
-
-.login button:active{
-  transform: translateY(0px);
-}
-
-/* Links */
-.login a{
-  color: rgba(248,250,252,0.85);
-  text-decoration: none;
-}
-.login a:hover{ text-decoration: underline; }
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce){
-  .login{
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-}
