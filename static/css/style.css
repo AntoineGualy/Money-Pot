@@ -309,6 +309,11 @@ button:hover {
   margin-bottom: 18px;
 }
 
+.LS {
+  color: #f8fafc;
+  font-size: 16px;
+}
+
 /* Inputs */
 .login input{
   width: 100%;
