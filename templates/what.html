@@ -5,11 +5,25 @@
 {% endblock %}
 
 {% block body %}
-<main class="what_page">
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">Money-P</div>
+    <nav class="nav">
+      <a class="nav-link active" href="/">Dashboard</a>
+      <a class="nav-link" href="/what-page">What is Money-Pot?</a>
+      <a class="nav-link" href="/lookup">Smart Lookup</a>
+      <a class="nav-link" href="#">Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main">
     <div class="card_1">
          <h1>What is Money-Pot?</h1>
          <h2>Money-Pot is a free grocery budgeting web application that helps users manage grocery spending.</h2>
-
     </div>
-</main>
+  </main>
+
+
 {% endblock %}

@@ -3,7 +3,8 @@ body {
     "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
     sans-serif;
     margin: 0;
-    background: #fafafa;
+    /* #fafafa */
+    background: #F5F5F7;
     color: #111827;
 }
 
@@ -344,4 +345,29 @@ button:hover {
   color: #020617;
   background: #A855f7;
   font-weight: 600;
+}
+
+.card_1 {
+  width: min(500px, 92vw);
+  padding: 28px;
+  border-radius: 18px;
+
+  background: rgba(17, 24, 39, 0.45);
+  border: 1px solid rgba(255,255,255,0.14);
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.05) inset;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  /* load-in animation */
+  opacity: 0;
+  transform: translateY(12px);
+  animation: cardIn 500ms ease-out forwards;
+}
+
+@keyframes cardIn{
+  to { opacity: 1; transform: translateY(0); }
 }
