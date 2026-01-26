@@ -400,6 +400,14 @@ def lookup_name_post():
 
 
 
+@app.route("/what-page", methods = ["GET", "POST"])
+def what_page():
+    return render_template("what.html")
+
+
+
+
+
 
 
 @app.route("/test-api")
@@ -427,6 +435,7 @@ def test_api():
     
     
     return "Check the terminal for API response"
+
 
 
 
