@@ -61,9 +61,11 @@ class User(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
 
 
+
     # Saves the password when a user signs up
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
+
 
 
     # Checks if the user password enter by the user is in the database
@@ -71,8 +73,8 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
-# Data Class - Row of data
 
+# Data Class - Row of data
 class GroceryItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Integer, default=0)
@@ -82,7 +84,7 @@ class GroceryItem(db.Model):
 
 
 
-class WeeklyBudget(db.Model):
+class Budget(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     budget = db.Column(db.Integer, default=0)
 
@@ -188,7 +190,7 @@ def index():
     
     # GET = show dashboard + list
     # 1) Get weekly budget (single row) 
-    budget_row = WeeklyBudget.query.first()
+    budget_row = Budget.query.first()
     weekly_budget = budget_row.budget if budget_row else 0
 
     # 2) Compute "this week" (Monday -> Sunday)
@@ -225,14 +227,14 @@ def index():
 def set_budget():
     new_budget = int(request.form["budget"])
 
-    budget_row = WeeklyBudget.query.first()
+    budget_row = Budget.query.first()
 
     if budget_row:
         #Update existing row
         budget_row.budget = new_budget
     else:
         #Create it once
-        budget_row = WeeklyBudget(budget=new_budget)
+        budget_row = Budget(budget=new_budget)
         db.session.add(budget_row)
 
     db.session.commit()
