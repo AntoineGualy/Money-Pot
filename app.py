@@ -262,7 +262,7 @@ def delete(id:int):
 
 
 
-
+# edit  an Item 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id:int):
     edit_item = GroceryItem.query.get_or_404(id)
