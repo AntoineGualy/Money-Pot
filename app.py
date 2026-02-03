@@ -190,7 +190,7 @@ def index():
     
     # GET = show dashboard + list
     # 1) Get weekly budget (single row) 
-    budget_row = Budget.query.first()
+    budget_row = Budget.query.first() # this give the user the first Budget in the data base. It need to go to make a one-many relationship
     weekly_budget = budget_row.budget if budget_row else 0
 
     # 2) Compute "this week" (Monday -> Sunday)
