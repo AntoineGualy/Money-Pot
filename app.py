@@ -86,6 +86,7 @@ class GroceryItem(db.Model):
 
 class Budget(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    owner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     budget = db.Column(db.Integer, default=0)
 
 
@@ -143,6 +144,10 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
+    new_budget = Budget(owner_user_id=new_user.id, budget=0)
+    db.session.add(new_budget)
+    db.session.commit()
+    
     session["username"] = username
     return redirect(url_for("index"))
 
