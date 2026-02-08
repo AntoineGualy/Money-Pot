@@ -197,32 +197,41 @@ def index():
         user = User.query.filter_by(username=username).first()
 
         if not user or not user.budget_id:
-            return "No budget found for this user."
+            return "No budget found for this user.", 400
+        
+        # Gets the user's budget row
+        budget_row = Budget.query.get(user.budget_id)
+        weekly_budget = budget_row.budget if budget_row else 0
         
         new_item = GroceryItem(
             amount=amount,
             category=category,
-            shopper=shopper
+            shopper=shopper,
+            budget_id = user.budget_id
         )
         db.session.add(new_item)
         db.session.commit()
         return redirect("/")
 
-    
-    # GET = show dashboard + list
-    # 1) Get weekly budget (single row) 
-    budget_row = Budget.query.first() # this give the user the first Budget in the data base. It need to go to make a one-many relationship
-    weekly_budget = budget_row.budget if budget_row else 0
+
 
     # 2) Compute "this week" (Monday -> Sunday)
     now = datetime.now(timezone.utc)
     start_of_week = now - timedelta(days=now.weekday())
     start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
 
+    # Initialize weekly_bdget 
+    weekly_budget = budget_row.budget if budget_row else 0
+
+    # Stops user for sharing unwanted data
+    username = session["username"]
+    user = User.query.filter_by(username=username).first()
+
     # 3) Purchases this week
     items = (
         GroceryItem.query
         .filter(GroceryItem.time >= start_of_week)
+        .filter(GroceryItem.budget_id == user.budget_id)
         .order_by(GroceryItem.time.desc())
         .all()  
      )
