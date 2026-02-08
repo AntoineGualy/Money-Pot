@@ -59,6 +59,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    budget_id = db.Column(db.Integer, db.ForeignKey("budget.id"), nullable=True)
+    
 
 
 
@@ -81,11 +83,13 @@ class GroceryItem(db.Model):
     category = db.Column(db.String(20))
     shopper = db.Column(db.String(20))
     time = db.Column(db.DateTime,default=lambda: datetime.now(timezone.utc))
+    budget_id = db.Column(db.Integer, db.ForeignKey("budget.id"), nullable=False)
 
 
 
 class Budget(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    # ForeignKey that connects each user to they own budget
     owner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     budget = db.Column(db.Integer, default=0)
 
@@ -147,7 +151,10 @@ def register():
     new_budget = Budget(owner_user_id=new_user.id, budget=0)
     db.session.add(new_budget)
     db.session.commit()
-    
+
+    new_user.budget_id = new_budget.id
+    db.session.commit()
+
     session["username"] = username
     return redirect(url_for("index"))
 
@@ -184,6 +191,14 @@ def index():
         amount = int(request.form['amount'])
         category = request.form['category']
         shopper = request.form['shopper']
+
+        # Finds the logged in user
+        username = session["username"]
+        user = User.query.filter_by(username=username).first()
+
+        if not user or not user.budget_id:
+            return "No budget found for this user."
+        
         new_item = GroceryItem(
             amount=amount,
             category=category,
@@ -192,6 +207,7 @@ def index():
         db.session.add(new_item)
         db.session.commit()
         return redirect("/")
+
     
     # GET = show dashboard + list
     # 1) Get weekly budget (single row) 
