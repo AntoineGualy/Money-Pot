@@ -185,6 +185,14 @@ def index():
     
     # Display Username at the top
     username = session["username"]
+
+    # Finds the logged in user
+    username = session["username"]
+    user = User.query.filter_by(username=username).first()
+
+    # Gets the user's budget row
+    budget_row = Budget.query.get(user.budget_id)
+    weekly_budget = budget_row.budget if budget_row else 0
     
     # Add a purchase
     if request.method == "POST":
@@ -192,16 +200,9 @@ def index():
         category = request.form['category']
         shopper = request.form['shopper']
 
-        # Finds the logged in user
-        username = session["username"]
-        user = User.query.filter_by(username=username).first()
-
         if not user or not user.budget_id:
             return "No budget found for this user.", 400
         
-        # Gets the user's budget row
-        budget_row = Budget.query.get(user.budget_id)
-        weekly_budget = budget_row.budget if budget_row else 0
         
         new_item = GroceryItem(
             amount=amount,
@@ -255,17 +256,37 @@ def index():
 
 @app.route("/budget", methods=["POST"])
 def set_budget():
-    new_budget = int(request.form["budget"])
+    # if the user in not signed send they to the login page 
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    # Finds user 
+    username = session["username"]
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.budget_id:
+        return "No budget found for this user.", 400
+    
+    
+    new_budget = (request.form.get("budget") or "").strip()
+    if not new_budget.isdigit():
+        return "Budget must be a non-negative integer", 400
+    
+    new_budget = int(new_budget)
+    
 
-    budget_row = Budget.query.first()
+    budget_row = Budget.query.get(user.budget_id)
+    if not budget_row:
+        return "Budget record missing", 400
+    
+    budget_row.budget = new_budget
 
-    if budget_row:
+    """if budget_row:
         #Update existing row
         budget_row.budget = new_budget
     else:
         #Create it once
         budget_row = Budget(budget=new_budget)
-        db.session.add(budget_row)
+        db.session.add(budget_row)"""
 
     db.session.commit()
     return redirect("/")
