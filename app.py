@@ -280,13 +280,6 @@ def set_budget():
     
     budget_row.budget = new_budget
 
-    """if budget_row:
-        #Update existing row
-        budget_row.budget = new_budget
-    else:
-        #Create it once
-        budget_row = Budget(budget=new_budget)
-        db.session.add(budget_row)"""
 
     db.session.commit()
     return redirect("/")
