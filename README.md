@@ -1,4 +1,3 @@
-https://antoinegualy.github.io/Money-Pot/
 
 <p align="center">
   <h1 align="center">🥫 Money-Pot</h1>
