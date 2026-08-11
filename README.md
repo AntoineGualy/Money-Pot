@@ -1,3 +1,4 @@
+
 <p align="center">
   <h1 align="center">🥫 Money-Pot</h1>
   <p align="center"><b>Smart grocery budgeting made simple, shared, and accessible.</b></p>
