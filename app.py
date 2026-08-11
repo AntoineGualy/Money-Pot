@@ -226,6 +226,24 @@ def _assert_pot_has_owner(pot_id):
         raise RuntimeError(f"Pot {pot_id} would be left with no owner - refusing to commit")
 
 
+# Makes the pot switcher/nav available to every template without every route
+# passing pot lists explicitly. Read-only - no writes, no self-heal here.
+@app.context_processor
+def inject_pot_nav():
+    user = current_user()
+    if not user:
+        return {}
+    memberships = (
+        Membership.query.filter_by(user_id=user.id)
+        .order_by(Membership.id.asc())
+        .all()
+    )
+    return {
+        "nav_memberships": memberships,
+        "nav_active_pot_id": session.get("active_pot_id"),
+    }
+
+
 # login
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -355,6 +373,7 @@ def index():
     return render_template(
         "index.html",
         username=user.username,
+        pot_name=pot.name,
         items=items,
         weekly_budget=weekly_budget,
         spent=spent,

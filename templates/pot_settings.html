@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+
+{% block head %}
+<title>{{ pot.name }} Settings</title>
+{% endblock %}
+
+
+{% block body %}
+<div class="app">
+
+  {% include '_sidebar.html' %}
+
+  <main class="main">
+    <div class="content">
+
+      <h1 class="jt">{{ pot.name }}</h1>
+      <p>Your role: {{ my_role }}</p>
+
+      {% if my_role == 'owner' %}
+        <div class="card">
+          <h3>Invite Link</h3>
+          <p>Share this link to invite someone to this pot:<br>
+            <code>{{ request.host_url }}join/{{ pot.invite_code }}</code>
+          </p>
+          <form action="{{ url_for('regenerate_invite', pot_id=pot.id) }}" method="POST">
+            <button type="submit">Regenerate Invite Link</button>
+          </form>
+        </div>
+      {% endif %}
+
+      <h3>Members</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Role</th>
+            {% if my_role == 'owner' %}<th>Actions</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in memberships %}
+            <tr>
+              <td>{{ m.user.username }}</td>
+              <td>{{ m.role }}</td>
+              {% if my_role == 'owner' %}
+                <td>
+                  {% if m.role != 'owner' %}
+                    <form action="{{ url_for('remove_member', pot_id=pot.id, user_id=m.user_id) }}" method="POST" style="display:inline; margin:0; max-width:none;">
+                      <button class="action-link" type="submit">Remove</button>
+                    </form>
+                  {% endif %}
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <form action="{{ url_for('leave_pot', pot_id=pot.id) }}" method="POST">
+        <button type="submit">Leave this Pot</button>
+      </form>
+
+    </div>
+  </main>
+
+</div>
+{% endblock %}

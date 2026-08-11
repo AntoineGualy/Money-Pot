@@ -10,23 +10,14 @@
 {% block body %}
 <div class="app">
 
-  <aside class="sidebar">
-    <div class="brand">Money-P</div>
-    <nav class="nav">
-      <a class="nav-link active" href="/">Dashboard</a>
-      <a class="nav-link" href="/what-page">What is Money-Pot?</a>
-      <a class="nav-link" href="/lookup">Smart Lookup</a>
-      <a class="nav-link" href="#">Settings</a>
-    </nav>
-  </aside>
-
-
+  {% include '_sidebar.html' %}
 
 
   <main class="main">
     <div class="content">
 
       <h1 class="jt">Welcome {{ username }}</h1>
+      <h2>{{ pot_name }}</h2>
 
       {% if weekly_budget == 0 %}
         <h3>Add a weekly budget</h3>
@@ -59,7 +50,7 @@
             <tr>
               <th>Amount</th>
               <th>Category</th>
-              <th>Shopper</th>
+              <th>Added By</th>
               <th>Time</th>
               <th>Actions</th>
             </tr>
@@ -69,10 +60,12 @@
               <tr>
                 <td>${{ item.amount }}</td>
                 <td>{{ item.category }}</td>
-                <td>{{ item.shopper }}</td>
+                <td>{{ item.added_by.username }}</td>
                 <td>{{ item.time | local_time }}</td>
                 <td>
-                  <a class ="action-link" href="/delete/{{ item.id }}">Delete</a><br/>
+                  <form action="/delete/{{ item.id }}" method="POST" style="display:inline; margin:0; max-width:none;">
+                    <button class="action-link" type="submit">Delete</button>
+                  </form>
                   <a class ="action-link" href="/edit/{{ item.id }}">Edit</a>
                 </td>
               </tr>
@@ -95,9 +88,6 @@
           <option value="snacks">Snacks</option>
           <option value="other">Other</option>
         </select>
-
-        <label for="shopper">Shopper</label>
-        <input type="text" name="shopper" id="shopper" maxlength="20" required>
 
         <button type="submit">Add Purchase</button>
       </form>

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+
+{% block head %}
+<title>My Pots</title>
+{% endblock %}
+
+
+{% block body %}
+<div class="app">
+
+  {% include '_sidebar.html' %}
+
+  <main class="main">
+    <div class="content">
+
+      <h1 class="jt">My Pots</h1>
+
+      {% if memberships|length == 0 %}
+        <h3>You're not in any pot yet.</h3>
+      {% else %}
+        <table>
+          <thead>
+            <tr>
+              <th>Pot</th>
+              <th>Role</th>
+              <th>Members</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in memberships %}
+              <tr>
+                <td>{{ m.pot.name }}</td>
+                <td>{{ m.role }}</td>
+                <td>{{ m.pot.memberships|length }}</td>
+                <td>
+                  <a class="action-link" href="{{ url_for('pot_settings', pot_id=m.pot_id) }}">Settings</a>
+                  <form action="{{ url_for('switch_pot') }}" method="POST" style="display:inline; margin:0; max-width:none;">
+                    <input type="hidden" name="pot_id" value="{{ m.pot_id }}">
+                    <button class="action-link" type="submit">Switch here</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <!-- Create pot form -->
+      <form action="{{ url_for('new_pot') }}" method="POST">
+        <label for="name">New Pot Name</label>
+        <input type="text" name="name" id="name" maxlength="80" required>
+        <button type="submit">Create Pot</button>
+      </form>
+
+    </div>
+  </main>
+
+</div>
+{% endblock %}

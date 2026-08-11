@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+
+{% block head %}
+<title>Join a Money Pot</title>
+{% endblock %}
+
+
+{% block body %}
+
+<main class="login_page">
+  <div class="login">
+    {% if pot %}
+      <h1>Join "{{ pot.name }}"?</h1>
+      <p>You've been invited to share this Money Pot.</p>
+      <form action="{{ url_for('join_pot', code=code) }}" method="POST">
+        <button type="submit">Join Pot</button>
+      </form>
+    {% else %}
+      <h1>Invalid Invite</h1>
+      <p>This invite link is invalid or has been revoked.</p>
+    {% endif %}
+  </div>
+</main>
+
+{% endblock %}
