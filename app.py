@@ -111,6 +111,9 @@ class Membership(db.Model):
     __table_args__ = (
         # A user can only have one membership row per pot.
         db.UniqueConstraint("user_id", "pot_id", name="uq_membership_user_pot"),
+        # role may only ever be 'owner' or 'member' - enforced by the database,
+        # not just application code.
+        db.CheckConstraint("role IN ('owner', 'member')", name="ck_membership_role"),
         # Speeds up "find this pot's owner" lookups.
         db.Index("ix_membership_pot_role", "pot_id", "role"),
         # A pot can have at most one 'owner' membership row. This only
