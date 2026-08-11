@@ -1,5 +1,5 @@
 # Imports
-from flask import Flask, render_template, redirect, request, session, url_for
+from flask import Flask, render_template, redirect, request, session, url_for, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime, timedelta, timezone
@@ -184,6 +184,16 @@ def create_personal_pot(user):
 
 
 def get_active_pot(user):
+    """Resolve the user's active Pot.
+
+    Returns (pot, created) - created is True only when a fallback personal
+    pot had to be created because the user had zero memberships (covers
+    leaving a last pot, being removed, or a pot being deleted by its
+    owner - always leaves the user with a pot). Never commits: only
+    flushes, so a freshly created pot/membership are visible within the
+    current transaction. The caller owns the commit, since it may have
+    other writes of its own to fold into the same transaction.
+    """
     pot_id = session.get("active_pot_id")
     membership = (
         Membership.query.filter_by(user_id=user.id, pot_id=pot_id).first()
@@ -196,15 +206,24 @@ def get_active_pot(user):
             .first()
         )
         if not membership:
-            # Covers any path that leaves a user with zero memberships:
-            # leaving their last pot, being removed, or their pot being
-            # deleted by its owner. Always leaves the user with a pot.
             pot = create_personal_pot(user)
-            db.session.commit()
+            db.session.flush()
             session["active_pot_id"] = pot.id
-            return pot
+            return pot, True
         session["active_pot_id"] = membership.pot_id
-    return membership.pot
+    return membership.pot, False
+
+
+def _assert_pot_has_owner(pot_id):
+    """Defensive check for the leave/ownership-transfer path: the database
+    only guarantees a pot has AT MOST one owner (the partial unique index).
+    It cannot guarantee a pot always HAS one - that's this function's job.
+    Raises before a bad state can be committed, rather than silently
+    persisting a pot with zero owners.
+    """
+    has_owner = Membership.query.filter_by(pot_id=pot_id, role="owner").first() is not None
+    if not has_owner:
+        raise RuntimeError(f"Pot {pot_id} would be left with no owner - refusing to commit")
 
 
 # login
@@ -221,6 +240,13 @@ def login():
     # allows user to access the home page after being verifed
     if user and user.check_password(password):
         session['username'] = username
+        # A self-healed pot is the only possible write on this path - commit
+        # it explicitly, since nothing else in this route will.
+        _, pot_created = get_active_pot(user)
+        if pot_created:
+            db.session.commit()
+        if session.get("pending_invite_code"):
+            return redirect(url_for("join_pot_info", code=session["pending_invite_code"]))
         return redirect(url_for("index"))
     else:
         return render_template("login.html", error="Invalid username or password")
@@ -250,14 +276,13 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    new_budget = Budget(owner_user_id=new_user.id, budget=0)
-    db.session.add(new_budget)
-    db.session.commit()
-
-    new_user.budget_id = new_budget.id
+    pot = create_personal_pot(new_user)
     db.session.commit()
 
     session["username"] = username
+    session["active_pot_id"] = pot.id
+    if session.get("pending_invite_code"):
+        return redirect(url_for("join_pot_info", code=session["pending_invite_code"]))
     return redirect(url_for("index"))
 
 
@@ -277,68 +302,51 @@ def logout():
 
 
 
-# Takes the information puts in database then sends it back 
+# Takes the information puts in database then sends it back
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def index():
-    # If the user is not loged in he is automatically
-    username = request.form.get("username")
-    if "username" not in session:
-        return render_template("login.html")
-    
-    # Display Username at the top
-    username = session["username"]
+    user = current_user()
+    pot, pot_created = get_active_pot(user)
 
-    # Finds the logged in user
-    username = session["username"]
-    user = User.query.filter_by(username=username).first()
-
-    # Gets the user's budget row
-    budget_row = Budget.query.get(user.budget_id)
-    weekly_budget = budget_row.budget if budget_row else 0
-    
     # Add a purchase
     if request.method == "POST":
         amount = int(request.form['amount'])
         category = request.form['category']
-        shopper = request.form['shopper']
 
-        if not user or not user.budget_id:
-            return "No budget found for this user.", 400
-        
-        
         new_item = GroceryItem(
             amount=amount,
             category=category,
-            shopper=shopper,
-            budget_id = user.budget_id
+            pot_id=pot.id,
+            added_by_user_id=user.id
         )
         db.session.add(new_item)
+        # One commit persists the new item together with any self-healed
+        # pot from above - they're the same transaction either way.
         db.session.commit()
         return redirect("/")
 
-
+    if pot_created:
+        # GET has no other write of its own - without this, a self-healed
+        # pot would be discarded when the request ends.
+        db.session.commit()
 
     # 2) Compute "this week" (Monday -> Sunday)
     now = datetime.now(timezone.utc)
     start_of_week = now - timedelta(days=now.weekday())
     start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    # Initialize weekly_bdget 
-    weekly_budget = budget_row.budget if budget_row else 0
-
-    # Stops user for sharing unwanted data
-    username = session["username"]
-    user = User.query.filter_by(username=username).first()
+    weekly_budget = pot.budget or 0
 
     # 3) Purchases this week
     items = (
         GroceryItem.query
         .filter(GroceryItem.time >= start_of_week)
-        .filter(GroceryItem.budget_id == user.budget_id)
+        .filter(GroceryItem.pot_id == pot.id)
         .order_by(GroceryItem.time.desc())
-        .all()  
+        .all()
      )
-    
+
 
     # 4) Calculate spent + remaining
     spent = sum(item.amount for item in items)
@@ -346,7 +354,7 @@ def index():
 
     return render_template(
         "index.html",
-        username=username,
+        username=user.username,
         items=items,
         weekly_budget=weekly_budget,
         spent=spent,
@@ -357,31 +365,18 @@ def index():
 
 
 @app.route("/budget", methods=["POST"])
+@login_required
 def set_budget():
-    # if the user in not signed send they to the login page 
-    if "username" not in session:
-        return redirect(url_for("login"))
-    
-    # Finds user 
-    username = session["username"]
-    user = User.query.filter_by(username=username).first()
-    if not user or not user.budget_id:
-        return "No budget found for this user.", 400
-    
-    
+    user = current_user()
+    # Any self-healed pot rides along with this route's own write below in
+    # the same transaction - no separate commit needed here.
+    pot, _ = get_active_pot(user)
+
     new_budget = (request.form.get("budget") or "").strip()
     if not new_budget.isdigit():
         return "Budget must be a non-negative integer", 400
-    
-    new_budget = int(new_budget)
-    
 
-    budget_row = Budget.query.get(user.budget_id)
-    if not budget_row:
-        return "Budget record missing", 400
-    
-    budget_row.budget = new_budget
-
+    pot.budget = int(new_budget)
 
     db.session.commit()
     return redirect("/")
@@ -393,9 +388,15 @@ def set_budget():
 
 
 # Delete an Item
-@app.route("/delete/<int:id>")
+@app.route("/delete/<int:id>", methods=["POST"])
+@login_required
 def delete(id:int):
+    user = current_user()
     delete_item = GroceryItem.query.get_or_404(id)
+
+    if not Membership.query.filter_by(user_id=user.id, pot_id=delete_item.pot_id).first():
+        abort(403)
+
     try:
         db.session.delete(delete_item)
         db.session.commit()
@@ -408,12 +409,18 @@ def delete(id:int):
 
 
 
-# edit  an Item 
+# edit  an Item
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
+@login_required
 def edit(id:int):
+    user = current_user()
     edit_item = GroceryItem.query.get_or_404(id)
+
+    if not Membership.query.filter_by(user_id=user.id, pot_id=edit_item.pot_id).first():
+        abort(403)
+
     if request.method == "POST":
-        edit_item.amount = request.form['func'] 
+        edit_item.amount = request.form['func']
         try:
             db.session.commit()
             return redirect("/")
@@ -422,6 +429,187 @@ def edit(id:int):
     else:
         return render_template('edit.html', edit_item=edit_item)
 
+
+# --- Pot management routes ---------------------------------------------------
+
+# "My Pots" list, and the create-pot form's target page. The create form
+# itself lives on this same template, per the plan - there's no separate
+# standalone "new pot" page.
+@app.route("/pots", methods=["GET"])
+@login_required
+def list_pots():
+    user = current_user()
+    memberships = (
+        Membership.query.filter_by(user_id=user.id)
+        .order_by(Membership.id.asc())
+        .all()
+    )
+    return render_template("pots_list.html", memberships=memberships)
+
+
+@app.route("/pots/new", methods=["GET", "POST"])
+@login_required
+def new_pot():
+    if request.method == "GET":
+        # The creation form lives on the list page, not a page of its own.
+        return redirect(url_for("list_pots"))
+
+    user = current_user()
+    name = (request.form.get("name") or "").strip()
+    if not name:
+        return "Pot name is required", 400
+
+    pot = Pot(name=name, budget=0, invite_code=secrets.token_urlsafe(12))
+    db.session.add(pot)
+    db.session.flush()
+    db.session.add(Membership(user_id=user.id, pot_id=pot.id, role="owner"))
+    db.session.commit()
+
+    session["active_pot_id"] = pot.id
+    return redirect(url_for("index"))
+
+
+@app.route("/pots/switch", methods=["POST"])
+@login_required
+def switch_pot():
+    user = current_user()
+    pot_id = request.form.get("pot_id", type=int)
+    membership = (
+        Membership.query.filter_by(user_id=user.id, pot_id=pot_id).first()
+        if pot_id else None
+    )
+    if not membership:
+        abort(403)
+    session["active_pot_id"] = membership.pot_id
+    return redirect(url_for("index"))
+
+
+@app.route("/pots/<int:pot_id>/settings", methods=["GET"])
+@login_required
+def pot_settings(pot_id):
+    user = current_user()
+    membership = Membership.query.filter_by(user_id=user.id, pot_id=pot_id).first()
+    if not membership:
+        abort(403)
+    pot = Pot.query.get_or_404(pot_id)
+    memberships = (
+        Membership.query.filter_by(pot_id=pot.id)
+        .order_by(Membership.id.asc())
+        .all()
+    )
+    return render_template(
+        "pot_settings.html", pot=pot, memberships=memberships, my_role=membership.role
+    )
+
+
+# Regenerating the invite code invalidates the old link immediately (owner
+# needs this after removing a member, so the old shared link stops working).
+# A separate "revoke" (disable invites entirely, no working link at all)
+# would need invite_code to be nullable - out of scope for the MVP; dropped
+# per review rather than kept as a redundant duplicate of this route.
+@app.route("/pots/<int:pot_id>/invite/regenerate", methods=["POST"])
+@login_required
+def regenerate_invite(pot_id):
+    user = current_user()
+    if not Membership.query.filter_by(user_id=user.id, pot_id=pot_id, role="owner").first():
+        abort(403)
+    pot = Pot.query.get_or_404(pot_id)
+    pot.invite_code = secrets.token_urlsafe(12)
+    db.session.commit()
+    return redirect(url_for("pot_settings", pot_id=pot.id))
+
+
+@app.route("/pots/<int:pot_id>/leave", methods=["POST"])
+@login_required
+def leave_pot(pot_id):
+    user = current_user()
+    membership = Membership.query.filter_by(user_id=user.id, pot_id=pot_id).first()
+    if not membership:
+        abort(403)
+
+    other_memberships = (
+        Membership.query.filter(Membership.pot_id == pot_id, Membership.id != membership.id)
+        .order_by(Membership.id.asc())
+        .all()
+    )
+
+    if not other_memberships:
+        # Last member leaving - the pot and everything in it goes with them.
+        # Explicit bulk deletes (not relying on ORM/DB cascade - SQLite
+        # doesn't enforce FKs by default in dev).
+        GroceryItem.query.filter_by(pot_id=pot_id).delete()
+        Membership.query.filter_by(pot_id=pot_id).delete()
+        Pot.query.filter_by(id=pot_id).delete()
+    else:
+        # Delete the leaving member's row FIRST and flush before promoting a
+        # new owner: the partial unique index only allows one 'owner' row
+        # per pot at a time, checked immediately (not deferred) on SQLite -
+        # setting the new owner's role while the old owner's row still
+        # exists would violate it, even though the old row is about to go.
+        was_owner = membership.role == "owner"
+        db.session.delete(membership)
+        db.session.flush()
+        if was_owner:
+            new_owner = other_memberships[0]  # lowest Membership.id = longest-standing
+            new_owner.role = "owner"
+            db.session.flush()
+        _assert_pot_has_owner(pot_id)
+
+    if session.get("active_pot_id") == pot_id:
+        session.pop("active_pot_id", None)
+
+    db.session.commit()
+    return redirect(url_for("index"))
+
+
+@app.route("/pots/<int:pot_id>/members/<int:user_id>/remove", methods=["POST"])
+@login_required
+def remove_member(pot_id, user_id):
+    user = current_user()
+    if not Membership.query.filter_by(user_id=user.id, pot_id=pot_id, role="owner").first():
+        abort(403)
+
+    if user_id == user.id:
+        return "Owners cannot remove themselves - use leave instead.", 400
+
+    target_membership = Membership.query.filter_by(user_id=user_id, pot_id=pot_id).first()
+    if not target_membership:
+        abort(404)
+
+    db.session.delete(target_membership)
+    db.session.commit()
+    return redirect(url_for("pot_settings", pot_id=pot_id))
+
+
+@app.route("/join/<code>", methods=["GET"])
+def join_pot_info(code):
+    pot = Pot.query.filter_by(invite_code=code).first()
+    if not pot:
+        return render_template("join_pot.html", pot=None, code=code), 404
+    if "username" not in session:
+        session["pending_invite_code"] = code
+        return redirect(url_for("login"))
+    return render_template("join_pot.html", pot=pot, code=code)
+
+
+@app.route("/join/<code>", methods=["POST"])
+@login_required
+def join_pot(code):
+    user = current_user()
+    pot = Pot.query.filter_by(invite_code=code).first()
+    if not pot:
+        abort(404)
+
+    # Idempotent: joining a pot you're already in just switches to it,
+    # rather than erroring or creating a duplicate membership.
+    existing = Membership.query.filter_by(user_id=user.id, pot_id=pot.id).first()
+    if not existing:
+        db.session.add(Membership(user_id=user.id, pot_id=pot.id, role="member"))
+        db.session.commit()
+
+    session["active_pot_id"] = pot.id
+    session.pop("pending_invite_code", None)
+    return redirect(url_for("index"))
 
 
 
