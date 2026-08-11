@@ -1,9 +1,12 @@
-# Imports 
-from flask import Flask, render_template, redirect, request, session, url_for 
+# Imports
+from flask import Flask, render_template, redirect, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from werkzeug.security import generate_password_hash, check_password_hash
+import functools
+import secrets
 
 # import request to to be able to conecct to the open foods API
 import requests
@@ -51,6 +54,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 print(app.config["SQLALCHEMY_DATABASE_URI"])
 
@@ -59,21 +63,77 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    budget_id = db.Column(db.Integer, db.ForeignKey("budget.id"), nullable=True)
-    
-
-
 
     # Saves the password when a user signs up
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
 
-
-
     # Checks if the user password enter by the user is in the database
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+
+# A Money Pot - a shared budget that can have multiple members
+class Pot(db.Model):
+    __tablename__ = "pot"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    budget = db.Column(db.Integer, default=0)
+    invite_code = db.Column(db.String(32), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    memberships = db.relationship(
+        "Membership", backref="pot", cascade="all, delete-orphan"
+    )
+    items = db.relationship(
+        "GroceryItem", backref="pot", cascade="all, delete-orphan"
+    )
+
+    def owner_membership(self):
+        return next((m for m in self.memberships if m.role == "owner"), None)
+
+    def __repr__(self):
+        return f"<Pot {self.id} {self.name}>"
+
+
+# Join table between User and Pot - a user can belong to multiple pots,
+# and a pot can have multiple members. Carries the owner/member role.
+class Membership(db.Model):
+    __tablename__ = "membership"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    pot_id = db.Column(db.Integer, db.ForeignKey("pot.id"), nullable=False)
+    role = db.Column(db.String(10), nullable=False, default="member")  # 'owner' | 'member'
+    joined_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship("User", backref="memberships")
+
+    __table_args__ = (
+        # A user can only have one membership row per pot.
+        db.UniqueConstraint("user_id", "pot_id", name="uq_membership_user_pot"),
+        # role may only ever be 'owner' or 'member' - enforced by the database,
+        # not just application code.
+        db.CheckConstraint("role IN ('owner', 'member')", name="ck_membership_role"),
+        # Speeds up "find this pot's owner" lookups.
+        db.Index("ix_membership_pot_role", "pot_id", "role"),
+        # A pot can have at most one 'owner' membership row. This only
+        # guarantees AT MOST one owner - it cannot guarantee a pot always
+        # HAS an owner. That's an application-level guarantee instead (see
+        # the leave/remove-member logic added in a later phase), enforced by
+        # keeping every ownership-transfer step inside a single transaction.
+        db.Index(
+            "uq_membership_one_owner_per_pot",
+            "pot_id",
+            unique=True,
+            sqlite_where=db.text("role = 'owner'"),
+            postgresql_where=db.text("role = 'owner'"),
+        ),
+    )
+
+    def __repr__(self):
+        return f"<Membership user={self.user_id} pot={self.pot_id} role={self.role}>"
 
 
 # Data Class - Row of data
@@ -81,28 +141,70 @@ class GroceryItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Integer, default=0)
     category = db.Column(db.String(20))
-    shopper = db.Column(db.String(20))
-    time = db.Column(db.DateTime,default=lambda: datetime.now(timezone.utc))
-    budget_id = db.Column(db.Integer, db.ForeignKey("budget.id"), nullable=False)
+    time = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    pot_id = db.Column(db.Integer, db.ForeignKey("pot.id"), nullable=False)
+    added_by_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
-
-
-class Budget(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    # ForeignKey that connects each user to they own budget
-    owner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    budget = db.Column(db.Integer, default=0)
-
-
+    added_by = db.relationship("User", foreign_keys=[added_by_user_id])
 
     def __repr__(self):
-        return f"item {self.id}"
-    
-
-with app.app_context():
-    db.create_all()
+        return f"<GroceryItem {self.id}>"
 
 
+# --- Session / auth helpers -------------------------------------------------
+# These replace the session["username"] -> User lookup that used to be
+# copy-pasted into every route, and add the pot-membership equivalent
+# (get_active_pot). No routes call these yet - that's the next phase.
+
+def current_user():
+    if "username" not in session:
+        return None
+    return User.query.filter_by(username=session["username"]).first()
+
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped(*args, **kwargs):
+        if "username" not in session:
+            return redirect(url_for("login"))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def create_personal_pot(user):
+    pot = Pot(
+        name=f"{user.username}'s Pot",
+        budget=0,
+        invite_code=secrets.token_urlsafe(12),
+    )
+    db.session.add(pot)
+    db.session.flush()  # assigns pot.id without ending the transaction
+    db.session.add(Membership(user_id=user.id, pot_id=pot.id, role="owner"))
+    return pot
+
+
+def get_active_pot(user):
+    pot_id = session.get("active_pot_id")
+    membership = (
+        Membership.query.filter_by(user_id=user.id, pot_id=pot_id).first()
+        if pot_id else None
+    )
+    if not membership:
+        membership = (
+            Membership.query.filter_by(user_id=user.id)
+            .order_by(Membership.id.asc())
+            .first()
+        )
+        if not membership:
+            # Covers any path that leaves a user with zero memberships:
+            # leaving their last pot, being removed, or their pot being
+            # deleted by its owner. Always leaves the user with a pot.
+            pot = create_personal_pot(user)
+            db.session.commit()
+            session["active_pot_id"] = pot.id
+            return pot
+        session["active_pot_id"] = membership.pot_id
+    return membership.pot
 
 
 # login
@@ -486,8 +588,5 @@ def test_api():
 
 
 
-with app.app_context():
-    db.create_all()
-    
 if __name__ in "__main__":
     app.run(debug=True)
