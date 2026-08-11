@@ -5,6 +5,8 @@ from flask_migrate import Migrate
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from werkzeug.security import generate_password_hash, check_password_hash
+import functools
+import secrets
 
 # import request to to be able to conecct to the open foods API
 import requests
@@ -147,6 +149,62 @@ class GroceryItem(db.Model):
 
     def __repr__(self):
         return f"<GroceryItem {self.id}>"
+
+
+# --- Session / auth helpers -------------------------------------------------
+# These replace the session["username"] -> User lookup that used to be
+# copy-pasted into every route, and add the pot-membership equivalent
+# (get_active_pot). No routes call these yet - that's the next phase.
+
+def current_user():
+    if "username" not in session:
+        return None
+    return User.query.filter_by(username=session["username"]).first()
+
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped(*args, **kwargs):
+        if "username" not in session:
+            return redirect(url_for("login"))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def create_personal_pot(user):
+    pot = Pot(
+        name=f"{user.username}'s Pot",
+        budget=0,
+        invite_code=secrets.token_urlsafe(12),
+    )
+    db.session.add(pot)
+    db.session.flush()  # assigns pot.id without ending the transaction
+    db.session.add(Membership(user_id=user.id, pot_id=pot.id, role="owner"))
+    return pot
+
+
+def get_active_pot(user):
+    pot_id = session.get("active_pot_id")
+    membership = (
+        Membership.query.filter_by(user_id=user.id, pot_id=pot_id).first()
+        if pot_id else None
+    )
+    if not membership:
+        membership = (
+            Membership.query.filter_by(user_id=user.id)
+            .order_by(Membership.id.asc())
+            .first()
+        )
+        if not membership:
+            # Covers any path that leaves a user with zero memberships:
+            # leaving their last pot, being removed, or their pot being
+            # deleted by its owner. Always leaves the user with a pot.
+            pot = create_personal_pot(user)
+            db.session.commit()
+            session["active_pot_id"] = pot.id
+            return pot
+        session["active_pot_id"] = membership.pot_id
+    return membership.pot
 
 
 # login
