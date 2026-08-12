@@ -1,0 +1,29 @@
+  <aside class="sidebar">
+    <div class="brand">Money-P</div>
+    <nav class="nav">
+      <a class="nav-link" href="/">Dashboard</a>
+      <a class="nav-link" href="/what-page">What is Money-Pot?</a>
+      <a class="nav-link" href="/lookup">Smart Lookup</a>
+      <a class="nav-link" href="{{ url_for('list_pots') }}">My Pots</a>
+      {% if nav_active_pot_id %}
+        <a class="nav-link" href="{{ url_for('pot_settings', pot_id=nav_active_pot_id) }}">Settings</a>
+      {% endif %}
+    </nav>
+
+    {% if nav_memberships %}
+      <form class="pot-switcher" action="{{ url_for('switch_pot') }}" method="POST">
+        <label for="pot_id">Active Pot</label>
+        <select name="pot_id" id="pot_id" onchange="this.form.submit()">
+          {% for m in nav_memberships %}
+            <option value="{{ m.pot_id }}" {% if m.pot_id == nav_active_pot_id %}selected{% endif %}>
+              {{ m.pot.name }} ({{ m.role }})
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    {% endif %}
+
+    <div class="Logout_Btn">
+      <a class="nav-link active" href="{{ url_for('logout') }}">LOGOUT</a>
+    </div>
+  </aside>
