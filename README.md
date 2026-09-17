@@ -91,13 +91,17 @@ Spending trends over time
 
 
 <h2>🛠️ Current MVP Status</h2>
-The current MVP focuses on establishing the backend foundation:
+The current MVP now includes real shared budgeting, not just a single-user budget:
 Flask-based web application
-CRUD functionality for budget entries
-SQLAlchemy ORM with a relational database
+User accounts with session-based authentication
+Shared "Money Pots" - create a pot, invite others via a link, switch between pots
+Purchases attributed to the real member who added them, not a free-text name
+Owner/member roles per pot (invite management, remove members, leave a pot)
+CRUD functionality for budget entries, scoped to the active pot
+SQLAlchemy ORM with Flask-Migrate/Alembic migrations (no more manual schema resets)
+A pytest suite covering membership, authorization, and shared-item behavior
 Server-side routing (GET/POST)
 Dynamic rendering with Jinja2
-Deployed web app for testing real-world behavior
 
 
 
@@ -109,8 +113,11 @@ This highlighted an important architectural lesson:
 Shared state exists without authentication
 User-specific data must be scoped correctly
 Authentication and session management are essential for real-world apps
-This insight directly informs the next development phase:
+This insight directly informed the next development phase:
 user accounts, authentication, and true shared-budget groups.
+<b>Update:</b> this has since been addressed - purchases and budgets are now scoped to a
+Pot/Membership model (see "Current MVP Status" above), with an authorization check on every
+purchase edit/delete confirming the requester actually belongs to that pot.
 
 
 
@@ -141,13 +148,12 @@ How product requirements influence backend design
 
 <h2>🔮 Roadmap</h2>
 <ul>
-<li>User authentication </li>
-<li>shared-budget groups with multiple users</li>
-<li>Budget invitations & permissions</li>
+<li>Rename an existing pot; delete a pot outright as its owner (currently: leaving as the last member deletes it)</li>
 <li>Grocery deal & coupon API integration</li>
 <li>Free food resource database</li>
 <li>Analytics dashboard & visualizations</li>
-<li>Production-ready database</li>
+<li>CSRF protection on forms</li>
+<li>Production deployment with a persistent Postgres database</li>
 </ul>
 
 <h2>🚧 Project Status</h2>
